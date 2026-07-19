@@ -62,107 +62,34 @@ SLOT_ICONS  = ["🖥", "🌙", "💎", "⚡", "🔥"]
 
 # ═══════════ 30 家 AI 模型提供商 ═══════════
 PROVIDERS = {
-    # ═══════════════════════════════════════════
-    # Coding Leaderboard 排名 (llm-stats.com/code)
-    # ✅ 已验证  🔬 端点存在待Key  ⚠ 特殊认证  ❌ 无公开API
-    # ═══════════════════════════════════════════
-
-    # ═══ Tier 1: #1 ═══
-    "openai": {"rank": 1, "label": "🤖 OpenAI",
-        "note": "⚠ 余额: /v1/usage 端点存在，需 Session Key", "api_ok": "special",
-        "balance_url": "https://api.openai.com/v1/usage"},
-
-    "claude": {"rank": 1, "label": "📜 Claude (Anthropic)",
-        "note": "❌ 无公开余额 API", "api_ok": False},
-
-    "qwen": {"rank": 1, "label": "☁️ 通义千问 Qwen (阿里)",
-        "note": "❌ DashScope 无公开余额端点 (404)", "api_ok": False},
-
-    # ═══ Tier 2: #2~3 ═══
-    "glm": {"rank": 2, "label": "🧠 智谱 GLM (Zhipu)",
-        "note": "🔬 /user/info 端点确认 (401=缺Key)", "api_ok": "pending",
-        "balance_url": "https://open.bigmodel.cn/api/paas/v4/user/info"},
-
-    "meituan": {"rank": 2, "label": "🍚 美团 Meituan",
-        "note": "❌ 无公开 API", "api_ok": False},
-
-    "kimi": {"rank": 3, "label": "🌙 Kimi 月之暗面",
-        "note": "✅ 余额 + 配额 + 速率全部可用", "api_ok": True,
-        "balance_url": "https://api.moonshot.cn/v1/users/me/balance",
-        "extra_url": "https://api.moonshot.cn/v1/users/me"},
-
-    # ═══ Tier 3: #4~6 ═══
-    "nvidia": {"rank": 4, "label": "🟢 NVIDIA NIM",
-        "note": "🔬 /users/me 端点确认 (401=缺Key)", "api_ok": "pending",
-        "balance_url": "https://api.nvcf.nvidia.com/v2/nvcf/users/me"},
-
-    "hunyuan": {"rank": 5, "label": "🐧 混元 Hunyuan (腾讯)",
-        "note": "⚠ 腾讯云 API，需 SecretId/Key 签名认证", "api_ok": "special",
-        "balance_url": "https://hunyuan.tencentcloudapi.com/"},
-
-    "doubao": {"rank": 6, "label": "🫘 豆包 Doubao (字节)",
-        "note": "🔬 /users/me 端点确认 (401=缺Key)", "api_ok": "pending",
-        "balance_url": "https://ark.cn-beijing.volces.com/api/v3/users/me"},
-
-    "xiaomi": {"rank": 6, "label": "📱 小米 Xiaomi",
-        "note": "❌ 无公开 LLM API", "api_ok": False},
-
-    # ═══ Tier 4: #7~8 ═══
-    "nous": {"rank": 7, "label": "🧪 Nous Research",
-        "note": "🖥 开源模型，无 API 服务", "api_ok": False},
-
-    "grok": {"rank": 8, "label": "🪐 Grok (xAI)",
-        "note": "❌ /users/me 返回 404，无余额端点", "api_ok": False},
-
-    "minimax": {"rank": 8, "label": "📐 MiniMax",
-        "note": "❌ /users/me 返回 404，无余额端点", "api_ok": False},
-
-    "amazon": {"rank": 8, "label": "🪨 Amazon (Bedrock)",
-        "note": "⚠ 需 AWS Console，无简单 REST 余额 API", "api_ok": False},
-
-    # ═══ Tier 5: #13~20 ═══
-    "llama": {"rank": 13, "label": "🦙 Llama (Meta)",
-        "note": "🖥 开源模型，通过第三方平台调用", "api_ok": False},
-
-    "deepseek": {"rank": 14, "label": "🐋 DeepSeek 深度求索",
-        "note": "✅ 余额 API: total_balance, granted_balance, topped_up_balance", "api_ok": True,
-        "balance_url": "https://api.deepseek.com/user/balance"},
-
-    "mistral": {"rank": 16, "label": "🌬️ Mistral AI",
-        "note": "🔬 /users/me 端点确认 (401=缺Key)", "api_ok": "pending",
-        "balance_url": "https://api.mistral.ai/v1/users/me"},
-
-    "microsoft": {"rank": 17, "label": "🪟 Microsoft (Azure OpenAI)",
-        "note": "⚠ 需 Azure Portal + Entra ID 认证", "api_ok": False},
-
-    "gemini": {"rank": 18, "label": "♊ Gemini (Google)",
-        "note": "⚠ Google AI Studio Key 可查 /models，但无余额端点", "api_ok": "special"},
-
-    "ibm": {"rank": 20, "label": "🔵 IBM watsonx",
-        "note": "❌ SSL 错误，端点不可达或已弃用", "api_ok": False},
-
-    # ═══ Tier 6: #28~88 ═══
-    "sarvam": {"rank": 28, "label": "🇮🇳 Sarvam AI",
-        "note": "❌ 未发现公开余额端点", "api_ok": False},
-
-    "ai21": {"rank": 29, "label": "2️⃣1️⃣ AI21 Labs",
-        "note": "❌ /users/me 返回 404", "api_ok": False},
-
-    "stepfun": {"rank": 38, "label": "👣 阶跃星辰 StepFun",
-        "note": "❌ /users/me 返回 404", "api_ok": False},
-
-    "cohere": {"rank": 52, "label": "🤝 Cohere",
-        "note": "🔬 /users/me 端点确认 (401=缺Key)", "api_ok": "pending",
-        "balance_url": "https://api.cohere.ai/v1/users/me"},
-
-    "unisound": {"rank": 57, "label": "🎤 云知声 Unisound",
-        "note": "❌ 无公开 API", "api_ok": False},
-
-    "openbmb": {"rank": 58, "label": "🔬 OpenBMB",
-        "note": "🖥 开源模型，无 API 服务", "api_ok": False},
-
-    "inception": {"rank": 88, "label": "🌌 Inception AI (Jais)",
-        "note": "❌ 未发现公开余额端点", "api_ok": False},
+    # llm-stats.com CODE leaderboard rank  ✅=已验证 🔬=端点存在 ⚠=特殊认证 ❌=无API
+    "openai":   {"rank":1,  "label":"🤖 OpenAI",             "api_ok":"special", "balance_url":"https://api.openai.com/v1/usage",                    "note":"⚠ 需 Session Key"},
+    "claude":   {"rank":1,  "label":"📜 Claude (Anthropic)", "api_ok":False,                                                                    "note":"❌ 无公开余额 API"},
+    "qwen":     {"rank":1,  "label":"☁️ 通义千问 Qwen",       "api_ok":False,                                                                    "note":"❌ DashScope 无余额端点"},
+    "glm":      {"rank":2,  "label":"🧠 智谱 GLM",           "api_ok":"pending","balance_url":"https://open.bigmodel.cn/api/paas/v4/user/info", "note":"🔬 待 Key 实测"},
+    "meituan":  {"rank":2,  "label":"🍚 美团 Meituan",       "api_ok":False,                                                                    "note":"❌ 无公开 API"},
+    "kimi":     {"rank":3,  "label":"🌙 Kimi 月之暗面",      "api_ok":True,    "balance_url":"https://api.moonshot.cn/v1/users/me/balance",    "note":"✅ 余额+配额+速率", "extra_url":"https://api.moonshot.cn/v1/users/me"},
+    "nvidia":   {"rank":4,  "label":"🟢 NVIDIA NIM",         "api_ok":"pending","balance_url":"https://api.nvcf.nvidia.com/v2/nvcf/users/me",   "note":"🔬 待 Key 实测"},
+    "hunyuan":  {"rank":5,  "label":"🐧 混元 Hunyuan",       "api_ok":"special","balance_url":"https://hunyuan.tencentcloudapi.com/",             "note":"⚠ 需 HMAC 签名"},
+    "doubao":   {"rank":6,  "label":"🫘 豆包 Doubao",        "api_ok":"pending","balance_url":"https://ark.cn-beijing.volces.com/api/v3/users/me","note":"🔬 待 Key 实测"},
+    "xiaomi":   {"rank":6,  "label":"📱 小米 Xiaomi",        "api_ok":False,                                                                    "note":"❌ 无公开 LLM API"},
+    "nous":     {"rank":7,  "label":"🧪 Nous Research",      "api_ok":False,                                                                    "note":"🖥 开源模型"},
+    "grok":     {"rank":8,  "label":"🪐 Grok (xAI)",         "api_ok":False,                                                                    "note":"❌ 无余额端点"},
+    "minimax":  {"rank":8,  "label":"📐 MiniMax",            "api_ok":False,                                                                    "note":"❌ 无余额端点"},
+    "amazon":   {"rank":8,  "label":"🪨 Amazon Bedrock",     "api_ok":False,                                                                    "note":"⚠ 需 AWS Console"},
+    "llama":    {"rank":13, "label":"🦙 Llama (Meta)",       "api_ok":False,                                                                    "note":"🖥 开源模型"},
+    "deepseek": {"rank":14, "label":"🐋 DeepSeek",           "api_ok":True,    "balance_url":"https://api.deepseek.com/user/balance",            "note":"✅ 余额 (CNY)"},
+    "mistral":  {"rank":16, "label":"🌬️ Mistral AI",        "api_ok":"pending","balance_url":"https://api.mistral.ai/v1/users/me",               "note":"🔬 待 Key 实测"},
+    "microsoft":{"rank":17, "label":"🪟 Microsoft Azure",    "api_ok":False,                                                                    "note":"⚠ 需 Entra ID"},
+    "gemini":   {"rank":18, "label":"♊ Gemini (Google)",    "api_ok":"special",                                                                  "note":"⚠ 无余额端点"},
+    "ibm":      {"rank":20, "label":"🔵 IBM watsonx",        "api_ok":False,                                                                    "note":"❌ 端点不可达"},
+    "sarvam":   {"rank":28, "label":"🇮🇳 Sarvam AI",         "api_ok":False,                                                                    "note":"❌ 无公开端点"},
+    "ai21":     {"rank":29, "label":"2️⃣1️⃣ AI21 Labs",       "api_ok":False,                                                                    "note":"❌ 无余额端点"},
+    "stepfun":  {"rank":38, "label":"👣 阶跃星辰 StepFun",   "api_ok":False,                                                                    "note":"❌ 无余额端点"},
+    "cohere":   {"rank":52, "label":"🤝 Cohere",             "api_ok":"pending","balance_url":"https://api.cohere.ai/v1/users/me",               "note":"🔬 待 Key 实测"},
+    "unisound": {"rank":57, "label":"🎤 云知声 Unisound",    "api_ok":False,                                                                    "note":"❌ 无公开 API"},
+    "openbmb":  {"rank":58, "label":"🔬 OpenBMB",            "api_ok":False,                                                                    "note":"🖥 开源模型"},
+    "inception": {"rank":88,"label":"🌌 Inception AI (Jais)","api_ok":False,                                                                    "note":"❌ 无公开端点"},
 }
 # ═══════════ 排名快取与线上查询 ═══════════
 
@@ -571,18 +498,9 @@ class SettingsDialog(ctk.CTkToplevel):
         def on_key_change(*args, i=idx, k=ke, pvar=pv):
             detected = detect_provider(k.get().strip())
             if detected:
-                pvar.set(PROVIDERS[detected].get("label", detected))
-                if i in self.warn_labels:
-                    self.warn_labels[i].configure(text=PROVIDERS[detected]["note"])
-                elif not PROVIDERS[detected].get("api_ok", True):
-                    lbl = ctk.CTkLabel(self, text=PROVIDERS[detected]["note"],
-                                       font=("Microsoft YaHei UI", 11, "bold"), text_color="#EF4444")
-                    lbl.pack(pady=(1, 0))
-                    self.warn_labels[i] = lbl
-            else:
-                if i in self.warn_labels:
-                    self.warn_labels[i].destroy()
-                    del self.warn_labels[i]
+                pvar.set(PROVIDERS[detected]["label"])
+            if i in self.warn_labels:
+                self.warn_labels[i].destroy(); del self.warn_labels[i]
         ke.bind("<KeyRelease>", on_key_change)
         self.entries.append({"key": ke, "provider": pv})
 
@@ -710,27 +628,20 @@ class MiniBalance(ctk.CTkToplevel):
 
 
 def bind_tooltip(widget, text):
-    """绑定 hover 提示"""
-    tip = None
+    tip = [None]
     def _enter(e):
-        nonlocal tip
-        if tip: return
-        tip = ctk.CTkToplevel(widget)
-        tip.overrideredirect(True)
-        tip.attributes("-topmost", True)
-        tip.configure(fg_color="#2A2A3E")
-        lbl = ctk.CTkLabel(tip, text=text, font=("Microsoft YaHei UI", 11),
-                           text_color="#E0E0F0")
-        lbl.pack(padx=8, pady=3)
-        tip.update_idletasks()
-        x = widget.winfo_rootx() + (widget.winfo_width() - tip.winfo_reqwidth()) // 2
-        y = widget.winfo_rooty() - tip.winfo_reqheight() - 4
-        tip.geometry(f"+{x}+{y}")
+        if tip[0]: return
+        tip[0] = ctk.CTkToplevel(widget)
+        tip[0].overrideredirect(True)
+        tip[0].attributes("-topmost", True)
+        tip[0].configure(fg_color="#2A2A3E")
+        ctk.CTkLabel(tip[0], text=text, font=("Microsoft YaHei UI", 11), text_color="#E0E0F0").pack(padx=8, pady=3)
+        tip[0].update_idletasks()
+        x = widget.winfo_rootx() + (widget.winfo_width() - tip[0].winfo_reqwidth()) // 2
+        y = widget.winfo_rooty() - tip[0].winfo_reqheight() - 4
+        tip[0].geometry(f"+{x}+{y}")
     def _leave(e):
-        nonlocal tip
-        if tip:
-            tip.destroy()
-            tip = None
+        if tip[0]: tip[0].destroy(); tip[0] = None
     widget.bind("<Enter>", _enter, add="+")
     widget.bind("<Leave>", _leave, add="+")
 
@@ -747,8 +658,6 @@ class ModelBalanceMonitor(ctk.CTk):
         self.FONT_TITLE = ctk.CTkFont(family="Microsoft YaHei UI", size=16, weight="bold")
         self.FONT_LABEL = ("Microsoft YaHei UI", 13)
         self.FONT_VALUE = ("Cascadia Code", 15, "bold")
-        self.FONT_SMALL = ("Microsoft YaHei UI", 11)
-        self.FONT_TINY  = ("Microsoft YaHei UI", 10)
 
         self.config = load_config()
         self.model_data = load_model_data()
