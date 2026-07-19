@@ -972,7 +972,7 @@ class ModelBalanceMonitor(ctk.CTk):
             else: note_color = "#EF4444"
             nr = ctk.CTkFrame(card, fg_color="transparent")
             nr.pack(fill="x", padx=18, pady=(10, 6))
-            ctk.CTkLabel(nr, text=f"📋 {prov_note}", font=self.FONT_TINY, text_color=note_color).pack(side="left")
+            ctk.CTkLabel(nr, text=f"📋 {prov_note}", font=("Microsoft YaHei UI", 10), text_color=note_color).pack(side="left")
         ctk.CTkFrame(card, fg_color="transparent", height=8).pack()
 
     def _resize_window(self):
