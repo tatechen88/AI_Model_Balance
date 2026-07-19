@@ -1190,7 +1190,7 @@ class ModelBalanceMonitor(ctk.CTk):
         self.api_dot.configure(text="●", text_color="#22C55E")
         if not updated:
             t = time.strftime("%H:%M:%S")
-            self.tip_label.configure(text=f"✅ 已刷新 ({t}, 无变化)")
+            self.tip_label.configure(text=f"✅ Key 已刷新 ({t}, 无变化)")
             self.update_idletasks()
             return
         ts = self.model_data.get("slots", [])
@@ -1200,7 +1200,7 @@ class ModelBalanceMonitor(ctk.CTk):
                 balances.append(f"{s.get('provider','?')}:{ts[i]['balance']}")
         summary = " | ".join(balances) if balances else "无有效余额"
         t = time.strftime("%H:%M:%S")
-        self.tip_label.configure(text=f"✅ 已刷新 ({t}) | {summary}")
+        self.tip_label.configure(text=f"✅ Key 已刷新 ({t}) | {summary}")
         self.update_idletasks()
         self._rebuild_card()
         self._update_mini()
