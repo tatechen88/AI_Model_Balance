@@ -2,7 +2,7 @@
 dist/
 build/
 __pycache__/
-*.spec
+# *.spec  # keep spec for rebuild
 *.exe
 
 # Sensitive user data (contains encrypted API keys or cached balances)
@@ -17,3 +17,7 @@ ai_traffic_monitor.lock
 .vscode/
 .idea/
 *.pyc
+
+# PyInstaller temp extraction
+_MEI*/
+
