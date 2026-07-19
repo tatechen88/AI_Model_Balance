@@ -1,0 +1,19 @@
+# Build artifacts
+dist/
+build/
+__pycache__/
+*.spec
+*.exe
+
+# Sensitive user data (contains encrypted API keys or cached balances)
+AI_config.enc
+AI_traffic_data.json
+AI_ranking_cache.json
+
+# Lock file
+ai_traffic_monitor.lock
+
+# IDE
+.vscode/
+.idea/
+*.pyc
