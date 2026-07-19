@@ -10,7 +10,7 @@ import pystray
 import ctypes
 from ctypes import wintypes
 
-APP_NAME = "AI流量监控"
+APP_NAME = "AI 模型余额"
 APP_VERSION = "v5.3.1"
 MAX_SLOTS = 5
 FETCH_INTERVAL_MIN = 10  # 预设每10分钟自动抓取
@@ -27,7 +27,7 @@ def _dpapi_encrypt(plaintext: str) -> bytes:
     blob_in = DATA_BLOB(len(data_in), ctypes.cast(data_in, ctypes.POINTER(ctypes.c_ubyte)))
     blob_out = DATA_BLOB()
     flags = 0x01  # CRYPTPROTECT_UI_FORBIDDEN (仅当前用户可解密)
-    if crypt32.CryptProtectData(ctypes.byref(blob_in), "AI-Traffic-Monitor", None, None, None, flags, ctypes.byref(blob_out)):
+    if crypt32.CryptProtectData(ctypes.byref(blob_in), "AI-Model-Balance", None, None, None, flags, ctypes.byref(blob_out)):
         result = ctypes.string_at(blob_out.pbData, blob_out.cbData)
         ctypes.windll.kernel32.LocalFree(blob_out.pbData)
         return result
@@ -52,8 +52,8 @@ else:
 
 # 加密配置文件存放于程式同目录
 CONFIG_FILE = BASE_DIR / "AI_config.enc"
-TRAFFIC_FILE = BASE_DIR / "AI_traffic_data.json"
-LOCK_FILE = Path(tempfile.gettempdir()) / "ai_traffic_monitor.lock"
+MODEL_DATA_FILE = BASE_DIR / "AI_model_data.json"
+LOCK_FILE = Path(tempfile.gettempdir()) / "ai_model_monitor.lock"
 RANKING_FILE = BASE_DIR / "AI_ranking_cache.json"
 RANKING_URL = "https://llm-stats.com/"
 
@@ -204,7 +204,7 @@ def fetch_rankings_from_web():
     """
     try:
         req = urllib.request.Request(RANKING_URL)
-        req.add_header("User-Agent", "AI-Traffic-Monitor/5.3")
+        req.add_header("User-Agent", "AI-Model-Balance/5.3")
         resp = urllib.request.urlopen(req, timeout=10)
         html = resp.read().decode("utf-8", errors="replace")
     except Exception as e:
@@ -265,7 +265,7 @@ def fetch_rankings_from_web():
     return (result if result else None), site_date
 
 DEFAULT_SLOT = {"key": "", "provider": ""}
-DEFAULT_TRAFFIC = {"balance": "—", "extra": {}}
+DEFAULT_DATA = {"balance": "—", "extra": {}}
 
 # ═══════════ 防重复执行 ═══════════
 
@@ -324,20 +324,20 @@ def save_config(cfg):
     except Exception as e:
         print(f"[ERROR] save_config failed: {e}", file=sys.stderr)
 
-def load_traffic():
-    if TRAFFIC_FILE.exists():
+def load_model_data():
+    if MODEL_DATA_FILE.exists():
         try:
-            data = json.loads(TRAFFIC_FILE.read_text(encoding="utf-8"))
+            data = json.loads(MODEL_DATA_FILE.read_text(encoding="utf-8"))
             slots = data.get("slots", [])
-            while len(slots) < MAX_SLOTS: slots.append(dict(DEFAULT_TRAFFIC))
+            while len(slots) < MAX_SLOTS: slots.append(dict(DEFAULT_DATA))
             return {"slots": slots[:MAX_SLOTS]}
         except: pass
-    data = {"slots": [dict(DEFAULT_TRAFFIC) for _ in range(MAX_SLOTS)]}
-    save_traffic(data)
+    data = {"slots": [dict(DEFAULT_DATA) for _ in range(MAX_SLOTS)]}
+    save_model_data(data)
     return data
 
-def save_traffic(data):
-    TRAFFIC_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+def save_model_data(data):
+    MODEL_DATA_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 def detect_provider(key):
     k = key.strip()
@@ -734,7 +734,7 @@ def bind_tooltip(widget, text):
     widget.bind("<Enter>", _enter, add="+")
     widget.bind("<Leave>", _leave, add="+")
 
-class TrafficMonitor(ctk.CTk):
+class ModelBalanceMonitor(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title(APP_NAME)
@@ -751,7 +751,7 @@ class TrafficMonitor(ctk.CTk):
         self.FONT_TINY  = ("Microsoft YaHei UI", 10)
 
         self.config = load_config()
-        self.traffic = load_traffic()
+        self.model_data = load_model_data()
         # 载入本地排名快取
         cached_ranks, self._ranking_updated, self._ranking_source, _ = load_ranking_cache()
         if cached_ranks:
@@ -1023,13 +1023,13 @@ class TrafficMonitor(ctk.CTk):
         prov_label = pinfo.get("label", provider)
         prov_note = pinfo.get("note", "")
         api_ok = pinfo.get("api_ok", False)
-        ts = self.traffic.get("slots", [])
-        while len(ts) <= self._current_slot: ts.append(dict(DEFAULT_TRAFFIC))
+        ts = self.model_data.get("slots", [])
+        while len(ts) <= self._current_slot: ts.append(dict(DEFAULT_DATA))
         # 不支援 API 的提供商：清除残留的前一个提供商资料并写入磁盘
         if not api_ok or (api_ok != True and api_ok not in ("pending", "special")):
-            ts[self._current_slot] = dict(DEFAULT_TRAFFIC)
-            self.traffic["slots"] = ts
-            save_traffic(self.traffic)
+            ts[self._current_slot] = dict(DEFAULT_DATA)
+            self.model_data["slots"] = ts
+            save_model_data(self.model_data)
         data = ts[self._current_slot]
         rows = get_model_rows(provider, data, pinfo)
         card = ctk.CTkFrame(self.card_frame, fg_color="#16162A", corner_radius=14,
@@ -1148,8 +1148,8 @@ class TrafficMonitor(ctk.CTk):
         def _fetch():
             try:
                 slots = self.config.get("slots", [])
-                ts = list(self.traffic.get("slots", []))
-                while len(ts) < MAX_SLOTS: ts.append(dict(DEFAULT_TRAFFIC))
+                ts = list(self.model_data.get("slots", []))
+                while len(ts) < MAX_SLOTS: ts.append(dict(DEFAULT_DATA))
                 # 并发查询所有有效槽位
                 tasks = []
                 for i, s in enumerate(slots):
@@ -1169,14 +1169,14 @@ class TrafficMonitor(ctk.CTk):
                                 result = f.result()
                             except:
                                 continue
-                            while len(ts) <= i: ts.append(dict(DEFAULT_TRAFFIC))
+                            while len(ts) <= i: ts.append(dict(DEFAULT_DATA))
                             if result.get("balance"):
                                 ts[i]["balance"] = result["balance"]; updated = True
                             if result.get("extra"):
                                 ts[i]["extra"] = result["extra"]; updated = True
                 if updated:
-                    self.traffic["slots"] = ts[:MAX_SLOTS]
-                    save_traffic(self.traffic)
+                    self.model_data["slots"] = ts[:MAX_SLOTS]
+                    save_model_data(self.model_data)
             finally:
                 self._fetching = False
                 self.after(0, lambda u=updated: self._on_fetch_done(u))
@@ -1190,7 +1190,7 @@ class TrafficMonitor(ctk.CTk):
             self.tip_label.configure(text=f"✅ 已刷新 ({t}, 无变化)")
             self.update_idletasks()
             return
-        ts = self.traffic.get("slots", [])
+        ts = self.model_data.get("slots", [])
         balances = []
         for i, s in enumerate(self.config.get("slots", [])):
             if s.get("key") and i < len(ts) and ts[i].get("balance", "—") != "—":
@@ -1204,7 +1204,7 @@ class TrafficMonitor(ctk.CTk):
 
     def _ui_timer(self):
         if not self._fetching:
-            self.traffic = load_traffic()
+            self.model_data = load_model_data()
             interval = self.config.get("fetch_interval_min", FETCH_INTERVAL_MIN) * 60
             if time.time() - self._last_fetch >= interval:
                 self._fetch_all_data()
@@ -1221,7 +1221,7 @@ class TrafficMonitor(ctk.CTk):
         self.mini.update_idletasks()
 
     def _update_mini(self):
-        self.mini.update_balances(self.config, self.traffic, self._current_slot)
+        self.mini.update_balances(self.config, self.model_data, self._current_slot)
 
     def _cycle_mini_slot(self):
         """点击小视窗：轮换到下一个有资料的公司"""
