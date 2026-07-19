@@ -64,7 +64,7 @@ pyinstaller --clean --noconfirm ai_model_monitor.spec
 | `AI_model_data.json` | 余额 / 配额快取（不含密钥） |
 | `AI_ranking_cache.json` | 排名快取（含网站更新日期） |
 
-锁文件：`%TEMP%\ai_model_monitor.lock`（防重复执行）
+防重复执行：Windows 命名 Mutex（无锁文件，跨路径生效，崩溃自动释放）
 
 ---
 
@@ -73,7 +73,7 @@ pyinstaller --clean --noconfirm ai_model_monitor.spec
 - 所有 API 请求 HTTPS 加密传输
 - API Key 经 Windows DPAPI 加密储存，仅当前用户可解密
 - 余额快取不含密钥
-- 文件锁 + 进程检测，防止多实例
+- Windows 命名 Mutex 防止多实例，进程异常退出时自动释放
 
 ---
 
@@ -97,4 +97,4 @@ pyinstaller --clean --noconfirm ai_model_monitor.spec
 
 ## 版本
 
-**v5.3.1** — 2026-07-20
+**v5.3.2** — 2026-07-20

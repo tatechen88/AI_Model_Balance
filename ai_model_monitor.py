@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """AI 流量监控 — 系统托盘 + 迷你余额浮窗"""
 
-import json, os, re, sys, threading, time, urllib.request, urllib.error, tempfile
+import json, os, re, sys, threading, time, urllib.request, urllib.error
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import customtkinter as ctk
@@ -53,7 +53,6 @@ else:
 # 加密配置文件存放于程式同目录
 CONFIG_FILE = BASE_DIR / "AI_config.enc"
 MODEL_DATA_FILE = BASE_DIR / "AI_model_data.json"
-LOCK_FILE = Path(tempfile.gettempdir()) / "ai_model_monitor.lock"
 RANKING_FILE = BASE_DIR / "AI_ranking_cache.json"
 RANKING_URL = "https://llm-stats.com/"
 
@@ -195,38 +194,32 @@ DEFAULT_SLOT = {"key": "", "provider": ""}
 DEFAULT_DATA = {"balance": "—", "extra": {}}
 
 # ═══════════ 防重复执行 ═══════════
+# 使用 Windows 命名 Mutex：跨路径生效，进程崩溃时由系统自动释放
+
+_mutex_handle = None
 
 def acquire_lock():
-    """尝试获取进程锁，防止重复执行"""
+    """尝试获取全局 Mutex，已有实例运行时返回 False"""
+    global _mutex_handle
     try:
-        if LOCK_FILE.exists():
-            try:
-                pid = int(LOCK_FILE.read_text().strip())
-                kernel32 = ctypes.windll.kernel32
-                # SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION
-                handle = kernel32.OpenProcess(0x100000 | 0x00100000, False, pid)
-                if handle:
-                    # WaitForSingleObject with 0 timeout: returns 0 if alive, 0x102 if dead
-                    ret = kernel32.WaitForSingleObject(handle, 0)
-                    kernel32.CloseHandle(handle)
-                    if ret == 0:
-                        return False  # 进程仍在运行
-            except:
-                pass
-            # 锁文件存在但进程已死，删除旧锁
-            try: LOCK_FILE.unlink()
-            except: pass
-        LOCK_FILE.write_text(str(os.getpid()))
+        k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        handle = k32.CreateMutexW(None, True, "AiModelBalanceMonitor_SingleInstance")
+        if not handle:
+            return True  # 建立失败时放行，避免完全无法启动
+        if ctypes.get_last_error() == 183:  # ERROR_ALREADY_EXISTS
+            k32.CloseHandle(handle)
+            return False
+        _mutex_handle = handle
         return True
     except:
         return True
 
 def release_lock():
-    try:
-        if LOCK_FILE.exists():
-            LOCK_FILE.unlink()
-    except:
-        pass
+    global _mutex_handle
+    if _mutex_handle:
+        try: ctypes.windll.kernel32.CloseHandle(_mutex_handle)
+        except: pass
+        _mutex_handle = None
 
 # ═══════════ 数据 ═══════════
 
