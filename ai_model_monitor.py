@@ -792,6 +792,9 @@ class ModelBalanceMonitor(ctk.CTk):
         self._create_tray()
         self.show_window()
         self._hover_enabled = False  # 首次启动保持视窗显示
+        # 无 Key 时自动跳出设定页面
+        if not self.active_slots:
+            self.after(500, self._open_settings)
         threading.Thread(target=self._hover_loop, daemon=True).start()
 
     @property
