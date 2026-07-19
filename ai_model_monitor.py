@@ -1268,7 +1268,7 @@ def main():
         # 已有实例在运行
         return
     try:
-        app = TrafficMonitor()
+        app = ModelBalanceMonitor()
         app.mainloop()
     finally:
         release_lock()
