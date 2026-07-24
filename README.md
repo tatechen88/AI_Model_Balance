@@ -24,13 +24,6 @@ Windows 用户直接下载 EXE，无需安装任何东西：
 
 点击 ⚙ 打开设置页，粘贴 Key 会自动识别是哪家的。每行右侧的 💳 按钮可以直接跳到该平台的付费页面。保存后余额会自动查询。
 
-**打包成 EXE**
-
-```powershell
-pip install pyinstaller
-pyinstaller --clean --noconfirm ai_model_monitor.spec
-```
-
 ---
 
 ## 主要能力
