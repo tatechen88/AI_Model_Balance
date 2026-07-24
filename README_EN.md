@@ -18,23 +18,7 @@ Unzip and double-click `Ai_MB_v5.5.0.exe`. A tray icon will appear in the bottom
 
 ## Getting Started
 
-**Run directly (zero pip install)**
-
-```powershell
-python ai_model_monitor.py
-```
-
-All dependencies are vendored in the project. Only Python 3.10+ needed.
-
-**Or build a standalone EXE**
-
-```powershell
-pip install pyinstaller
-pyinstaller --clean --noconfirm ai_model_monitor.spec
-# Output: dist\Ai_MB.exe (copy to any Windows PC, double-click to run)
-```
-
-An icon appears in the system tray. Hover to open the main panel — it auto-hides when your cursor leaves.
+Download the ZIP above, unzip, and double-click `Ai_MB_v5.5.0.exe`. A tray icon appears — hover to open the main panel, which auto-hides when your cursor leaves.
 
 **Configure API Keys**
 

@@ -18,23 +18,7 @@ Windows 用户直接下载 EXE，无需安装任何东西：
 
 ## 怎么用
 
-**直接运行（无需安装任何库）**
-
-```powershell
-python ai_model_monitor.py
-```
-
-依赖已内嵌在项目中（customtkinter + pystray），只需 Python 3.10+。
-
-**或打包成单文件 EXE**
-
-```powershell
-pip install pyinstaller
-pyinstaller --clean --noconfirm ai_model_monitor.spec
-# 输出: dist\Ai_MB.exe（拷到任何 Windows 电脑双击即用）
-```
-
-程序会在右下角托盘出现图标。鼠标移上去弹出主窗口，移开自动隐藏。
+下载上面的 ZIP，解压，双击 `Ai_MB_v5.5.0.exe`。右下角托盘出现图标，鼠标移上去弹出主窗口，移开自动隐藏。
 
 **配置 API Key**
 
