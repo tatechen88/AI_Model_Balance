@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 """AI 流量监控 — 系统托盘 + 迷你余额浮窗"""
 
-import json, os, re, sys, threading, time, urllib.request, urllib.error
+import json, os, re, sys, threading, time, urllib.request, urllib.error, webbrowser
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import customtkinter as ctk
+import tkinter as tk
 from PIL import Image, ImageDraw
 import pystray
 import ctypes
 from ctypes import wintypes
 
 APP_NAME = "AI 模型余额"
-APP_VERSION = "v5.3.1"
+APP_VERSION = "v5.4.0"
 MAX_SLOTS = 5
 FETCH_INTERVAL_MIN = 10  # 预设每10分钟自动抓取
 
@@ -59,36 +60,31 @@ RANKING_URL = "https://llm-stats.com/"
 SLOT_COLORS = ["#4F46E5", "#7C3AED", "#10B981", "#F59E0B", "#EC4899"]
 SLOT_ICONS  = ["🖥", "🌙", "💎", "⚡", "🔥"]
 
-# ═══════════ 30 家 AI 模型提供商 ═══════════
+# ═══════════ 22 家 AI 模型提供商 ═══════════
 PROVIDERS = {
     # llm-stats.com CODE leaderboard rank  ✅=已验证 🔬=端点存在 ⚠=特殊认证 ❌=无API
-    "openai":   {"rank":1,  "label":"🤖 OpenAI",             "api_ok":"special", "balance_url":"https://api.openai.com/v1/usage",                    "note":"⚠ 需 Session Key"},
-    "claude":   {"rank":1,  "label":"📜 Claude (Anthropic)", "api_ok":False,                                                                    "note":"📋 仅本地追踪"},
-    "qwen":     {"rank":1,  "label":"☁️ 通义千问 Qwen",       "api_ok":False,                                                                    "note":"📋 仅本地追踪"},
-    "glm":      {"rank":2,  "label":"🧠 智谱 GLM",           "api_ok":"pending","balance_url":"https://open.bigmodel.cn/api/paas/v4/user/info", "note":"🔬 待 Key 实测"},
-    "meituan":  {"rank":2,  "label":"🍚 美团 Meituan",       "api_ok":False,                                                                    "note":"📋 仅本地追踪"},
-    "kimi":     {"rank":3,  "label":"🌙 Kimi 月之暗面",      "api_ok":True,    "balance_url":"https://api.moonshot.cn/v1/users/me/balance",    "note":"✅ 余额+配额+速率", "extra_url":"https://api.moonshot.cn/v1/users/me"},
-    "nvidia":   {"rank":4,  "label":"🟢 NVIDIA NIM",         "api_ok":"pending","balance_url":"https://api.nvcf.nvidia.com/v2/nvcf/users/me",   "note":"🔬 待 Key 实测"},
-    "hunyuan":  {"rank":5,  "label":"🐧 混元 Hunyuan",       "api_ok":"special","balance_url":"https://hunyuan.tencentcloudapi.com/",             "note":"⚠ 需 HMAC 签名"},
-    "doubao":   {"rank":6,  "label":"🫘 豆包 Doubao",        "api_ok":"pending","balance_url":"https://ark.cn-beijing.volces.com/api/v3/users/me","note":"🔬 待 Key 实测"},
-    "xiaomi":   {"rank":6,  "label":"📱 小米 Xiaomi",        "api_ok":False,                                                                    "note":"📋 仅本地追踪"},
-    "nous":     {"rank":7,  "label":"🧪 Nous Research",      "api_ok":False,                                                                    "note":"📋 开源模型"},
-    "grok":     {"rank":8,  "label":"🪐 Grok (xAI)",         "api_ok":False,                                                                    "note":"📋 仅本地追踪"},
-    "minimax":  {"rank":8,  "label":"📐 MiniMax",            "api_ok":False,                                                                    "note":"📋 仅本地追踪"},
-    "amazon":   {"rank":8,  "label":"🪨 Amazon Bedrock",     "api_ok":False,                                                                    "note":"📋 需 AWS Console"},
-    "llama":    {"rank":13, "label":"🦙 Llama (Meta)",       "api_ok":False,                                                                    "note":"📋 开源模型"},
-    "deepseek": {"rank":14, "label":"🐋 DeepSeek",           "api_ok":True,    "balance_url":"https://api.deepseek.com/user/balance",            "note":"✅ 余额 (CNY)"},
-    "mistral":  {"rank":16, "label":"🌬️ Mistral AI",        "api_ok":"pending","balance_url":"https://api.mistral.ai/v1/users/me",               "note":"🔬 待 Key 实测"},
-    "microsoft":{"rank":17, "label":"🪟 Microsoft Azure",    "api_ok":False,                                                                    "note":"📋 需 Entra ID"},
-    "gemini":   {"rank":18, "label":"♊ Gemini (Google)",    "api_ok":"special",                                                                  "note":"📋 需 Google Cloud"},
-    "ibm":      {"rank":20, "label":"🔵 IBM watsonx",        "api_ok":False,                                                                    "note":"📋 仅本地追踪"},
-    "sarvam":   {"rank":28, "label":"🇮🇳 Sarvam AI",         "api_ok":False,                                                                    "note":"📋 仅本地追踪"},
-    "ai21":     {"rank":29, "label":"2️⃣1️⃣ AI21 Labs",       "api_ok":False,                                                                    "note":"📋 仅本地追踪"},
-    "stepfun":  {"rank":38, "label":"👣 阶跃星辰 StepFun",   "api_ok":False,                                                                    "note":"📋 仅本地追踪"},
-    "cohere":   {"rank":52, "label":"🤝 Cohere",             "api_ok":"pending","balance_url":"https://api.cohere.ai/v1/users/me",               "note":"🔬 待 Key 实测"},
-    "unisound": {"rank":57, "label":"🎤 云知声 Unisound",    "api_ok":False,                                                                    "note":"📋 仅本地追踪"},
-    "openbmb":  {"rank":58, "label":"🔬 OpenBMB",            "api_ok":False,                                                                    "note":"📋 开源模型"},
-    "inception": {"rank":88,"label":"🌌 Inception AI (Jais)","api_ok":False,                                                                    "note":"📋 仅本地追踪"},
+    "openai":   {"rank":1,  "label":"🤖 OpenAI",             "api_ok":"special", "balance_url":"https://api.openai.com/v1/usage",                    "billing_url":"https://platform.openai.com/usage", "note":"⚠ 需 Session Key"},
+    "claude":   {"rank":1,  "label":"📜 Claude (Anthropic)", "api_ok":False,                                                                    "billing_url":"https://console.anthropic.com/settings/plans", "note":"📋 仅本地追踪"},
+    "qwen":     {"rank":1,  "label":"☁️ 通义千问 Qwen",       "api_ok":True,    "balance_url":"https://dashscope.aliyuncs.com/compatible-mode/v1/usage", "billing_url":"https://platform.qianwenai.com/home/api-keys", "note":"✅ 按量付费 ¥ / Token Plan"},
+    "glm":      {"rank":2,  "label":"🧠 智谱 GLM",           "api_ok":"pending","balance_url":"https://open.bigmodel.cn/api/paas/v4/user/info", "billing_url":"https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys", "note":"🔬 待 Key 实测"},
+    "kimi":     {"rank":3,  "label":"🌙 Kimi 月之暗面",      "api_ok":True,    "balance_url":"https://api.moonshot.cn/v1/users/me/balance",    "billing_url":"https://platform.moonshot.cn/console/api-keys", "note":"✅ 余额+配额+速率", "extra_url":"https://api.moonshot.cn/v1/users/me"},
+    "nvidia":   {"rank":4,  "label":"🟢 NVIDIA NIM",         "api_ok":"pending","balance_url":"https://api.nvcf.nvidia.com/v2/nvcf/users/me",   "billing_url":"https://build.nvidia.com/", "note":"🔬 待 Key 实测"},
+    "hunyuan":  {"rank":5,  "label":"🐧 混元 Hunyuan",       "api_ok":"special","balance_url":"https://hunyuan.tencentcloudapi.com/",             "billing_url":"https://console.cloud.tencent.com/hunyuan", "note":"⚠ 需 HMAC 签名"},
+    "doubao":   {"rank":6,  "label":"🫘 豆包 Doubao",        "api_ok":"pending","balance_url":"https://ark.cn-beijing.volces.com/api/v3/users/me","billing_url":"https://console.volcengine.com/ark/region:ark+cn-beijing/overview", "note":"🔬 待 Key 实测"},
+    "grok":     {"rank":8,  "label":"🪐 Grok (xAI)",         "api_ok":False,                                                                    "billing_url":"https://console.x.ai/", "note":"📋 仅本地追踪"},
+    "minimax":  {"rank":8,  "label":"📐 MiniMax",            "api_ok":False,                                                                    "billing_url":"https://platform.minimaxi.com/user-center/basic-information", "note":"📋 仅本地追踪"},
+    "amazon":   {"rank":8,  "label":"🪨 Amazon Bedrock",     "api_ok":False,                                                                    "billing_url":"https://us-east-1.console.aws.amazon.com/bedrock/", "note":"📋 需 AWS Console"},
+    "deepseek": {"rank":14, "label":"🐋 DeepSeek",           "api_ok":True,    "balance_url":"https://api.deepseek.com/user/balance",            "billing_url":"https://platform.deepseek.com/api_keys", "note":"✅ 余额 (CNY)"},
+    "mistral":  {"rank":16, "label":"🌬️ Mistral AI",        "api_ok":"pending","balance_url":"https://api.mistral.ai/v1/users/me",               "billing_url":"https://console.mistral.ai/", "note":"🔬 待 Key 实测"},
+    "microsoft":{"rank":17, "label":"🪟 Microsoft Azure",    "api_ok":False,                                                                    "billing_url":"https://portal.azure.com/", "note":"📋 需 Entra ID"},
+    "gemini":   {"rank":18, "label":"♊ Gemini (Google)",    "api_ok":"special",                                                                  "billing_url":"https://aistudio.google.com/apikey", "note":"📋 需 Google Cloud"},
+    "ibm":      {"rank":20, "label":"🔵 IBM watsonx",        "api_ok":False,                                                                    "billing_url":"https://cloud.ibm.com/", "note":"📋 仅本地追踪"},
+    "sarvam":   {"rank":28, "label":"🇮🇳 Sarvam AI",         "api_ok":False,                                                                    "billing_url":"https://www.sarvam.ai/", "note":"📋 仅本地追踪"},
+    "ai21":     {"rank":29, "label":"2️⃣1️⃣ AI21 Labs",       "api_ok":False,                                                                    "billing_url":"https://studio.ai21.com/", "note":"📋 仅本地追踪"},
+    "stepfun":  {"rank":38, "label":"👣 阶跃星辰 StepFun",   "api_ok":False,                                                                    "billing_url":"https://platform.stepfun.com/", "note":"📋 仅本地追踪"},
+    "cohere":   {"rank":52, "label":"🤝 Cohere",             "api_ok":"pending","balance_url":"https://api.cohere.ai/v1/users/me",               "billing_url":"https://dashboard.cohere.com/", "note":"🔬 待 Key 实测"},
+    "unisound": {"rank":57, "label":"🎤 云知声 Unisound",    "api_ok":False,                                                                    "billing_url":"https://www.unisound.com/", "note":"📋 仅本地追踪"},
+    "inception": {"rank":88,"label":"🌌 Inception AI (Jais)","api_ok":False,                                                                    "billing_url":"https://inceptionlabs.ai/", "note":"📋 仅本地追踪"},
 }
 # ═══════════ 排名快取与线上查询 ═══════════
 
@@ -158,17 +154,17 @@ def fetch_rankings_from_web():
     ORG_TO_KEY = {
         "OpenAI": "openai", "Anthropic": "claude",
         "Alibaba Cloud / Qwen Team": "qwen", "Zhipu AI": "glm",
-        "Meituan": "meituan", "Moonshot AI": "kimi",
+        "Moonshot AI": "kimi",
         "NVIDIA": "nvidia", "Tencent": "hunyuan",
-        "ByteDance": "doubao", "Xiaomi": "xiaomi",
-        "Nous Research": "nous", "xAI": "grok",
+        "ByteDance": "doubao",
+        "xAI": "grok",
         "MiniMax": "minimax", "Amazon": "amazon",
-        "Meta": "llama", "DeepSeek": "deepseek",
+        "DeepSeek": "deepseek",
         "Mistral AI": "mistral", "Microsoft": "microsoft",
         "Google": "gemini", "IBM": "ibm",
         "Sarvam AI": "sarvam", "AI21 Labs": "ai21",
         "StepFun": "stepfun", "Cohere": "cohere",
-        "Unisound": "unisound", "OpenBMB": "openbmb",
+        "Unisound": "unisound",
         "Inception": "inception",
         "Baidu": "ernie",
         "LG AI Research": "lg",
@@ -176,7 +172,7 @@ def fetch_rankings_from_web():
     result = {}
     for org_name, rank in org_ranks.items():
         key = ORG_TO_KEY.get(org_name)
-        if key:
+        if key and key in PROVIDERS:
             result[key] = rank
     # 提取网站资料更新日期
     site_date = ""
@@ -264,6 +260,7 @@ def detect_provider(key):
     if not k: return ""
     if k.startswith("sk-proj-") or k.startswith("sk-svcacct-"): return "openai"
     if k.startswith("sk-ant-"): return "claude"
+    if k.startswith("sk-ws-") or k.startswith("sk-sp-"): return "qwen"
     if k.startswith("sk-"): return "deepseek" if re.match(r'^sk-[0-9a-f]{32,}$', k) else "kimi"
     if k.startswith("AIza"): return "gemini"
     if k.startswith("gsk_"): return "groq"
@@ -383,6 +380,36 @@ def create_tray_image():
 
 # ═══════════ UI ═══════════
 
+
+class ToolTip:
+    """悬停提示：显示付费链接 URL"""
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tip = None
+        self.widget.bind("<Enter>", self._show)
+        self.widget.bind("<Leave>", self._hide)
+    def _show(self, e=None):
+        if self.tip or not self.text:
+            return
+        import tkinter as tk
+        x = self.widget.winfo_rootx() + self.widget.winfo_width() // 2
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + 4
+        self.tip = tk.Toplevel(self.widget)
+        self.tip.wm_overrideredirect(True)
+        self.tip.wm_geometry(f"+{x}+{y}")
+        self.tip.attributes("-topmost", True)
+        lbl = ctk.CTkLabel(self.tip, text=self.text, fg_color="#2D2D44",
+                           text_color="#E0E0F0", corner_radius=6,
+                           font=("Microsoft YaHei UI", 11))
+        lbl.pack(padx=8, pady=3)
+    def update_text(self, text):
+        self.text = text
+    def _hide(self, e=None):
+        if self.tip:
+            self.tip.destroy()
+            self.tip = None
+
 class SettingsDialog(ctk.CTkToplevel):
     def __init__(self, parent, config, on_save):
         super().__init__(parent)
@@ -403,12 +430,12 @@ class SettingsDialog(ctk.CTkToplevel):
         ctk.CTkLabel(self, text="🔑 API Key 配置（最多 5 个槽位）",
                      font=ctk.CTkFont(family="Microsoft YaHei UI", size=17, weight="bold"),
                      text_color="#E0E0F0").pack(pady=(14, 6))
-        ctk.CTkLabel(self, text="粘贴 Key 自动识别  |  27 家提供商按 Coding 排名",
+        ctk.CTkLabel(self, text="粘贴 Key 自动识别  |  22 家提供商按 Coding 排名",
                      font=("Microsoft YaHei UI", 13), text_color="#8B8BA0").pack()
 
         hdr = ctk.CTkFrame(self, fg_color="transparent")
         hdr.pack(fill="x", padx=14, pady=(8, 2))
-        for txt, w in [("#", 30), ("API Key", 310), ("提供商", 170), ("", 30)]:
+        for txt, w in [("#", 30), ("API Key", 280), ("提供商", 155), ("💳", 28), ("", 30)]:
             ctk.CTkLabel(hdr, text=txt, width=w, font=("Microsoft YaHei UI", 13),
                          text_color="#8B8BA0").pack(side="left", padx=(0 if txt == "#" else 4, 0))
 
@@ -468,7 +495,7 @@ class SettingsDialog(ctk.CTkToplevel):
         color = SLOT_COLORS[idx]
         ctk.CTkLabel(row, text=str(idx+1), width=30,
                      font=("Cascadia Code", 14, "bold"), text_color=color).pack(side="left", padx=(10, 6))
-        ke = ctk.CTkEntry(row, width=310, show="•", font=("Cascadia Code", 12),
+        ke = ctk.CTkEntry(row, width=280, show="•", font=("Cascadia Code", 12),
                           fg_color="#0F0F23", border_width=1, border_color="#2A2A4A",
                           height=30)
         ke.pack(side="left", padx=3, pady=5); ke.insert(0, key)
@@ -476,13 +503,39 @@ class SettingsDialog(ctk.CTkToplevel):
         # 提供商列表：按模型能力排名排序，显示中英文标签
         prov_keys_sorted = sorted(PROVIDERS.keys(), key=lambda k: PROVIDERS[k].get("rank", 99))
         prov_labels = [PROVIDERS[k]["label"] for k in prov_keys_sorted]
-        pm = ctk.CTkOptionMenu(row, width=170, values=[""]+prov_labels,
+        pm = ctk.CTkOptionMenu(row, width=155, values=[""]+prov_labels,
                                fg_color="#0F0F23", button_color="#4F46E5",
                                text_color="#E0E0F0",
                                variable=pv, font=("Microsoft YaHei UI", 13),
                                button_hover_color="#6366F1",
                                corner_radius=6)
         pm.pack(side="left", padx=3, pady=5)
+        def _open_billing(i=idx, pvar=pv):
+            label = pvar.get()
+            for k, v in PROVIDERS.items():
+                if v.get("label") == label:
+                    url = v.get("billing_url", "")
+                    if url:
+                        webbrowser.open(url)
+                    return
+        bill_btn = ctk.CTkButton(row, text="💳", width=28, height=28,
+                                  fg_color="transparent", hover_color="#374151",
+                                  font=("Segoe UI", 12),
+                                  command=_open_billing)
+        bill_btn.pack(side="left", padx=1, pady=5)
+        bill_tip = ToolTip(bill_btn, "选择提供商后显示付费链接")
+        def _on_prov_change(*args, pvar=pv, tip=bill_tip):
+            label = pvar.get()
+            for k, v in PROVIDERS.items():
+                if v.get("label") == label:
+                    url = v.get("billing_url", "")
+                    if url:
+                        tip.update_text(f"💳 {url}")
+                    else:
+                        tip.update_text("无付费页面")
+                    return
+            tip.update_text("选择提供商后显示付费链接")
+        pv.trace_add("write", _on_prov_change)
         del_btn = ctk.CTkButton(row, text="🗑", width=30, height=30,
                                 fg_color="transparent", hover_color="#EF4444",
                                 font=("Segoe UI", 14), text_color="#8B8BA0",

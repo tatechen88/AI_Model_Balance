@@ -97,4 +97,4 @@ pyinstaller --clean --noconfirm ai_model_monitor.spec
 
 ## 版本
 
-**v5.3.2** — 2026-07-20
+**v5.4.0** — 2026-07-25

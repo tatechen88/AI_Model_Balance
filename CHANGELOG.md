@@ -1,5 +1,20 @@
 # Changelog
 
+## v5.4.0 — 2026-07-25
+
+### 新增
+- 💳 API Key 页面每个槽位新增付费链接按钮，悬停显示目标 URL，点击跳转浏览器
+- 通义千问 API Key 自动识别（sk-ws- / sk-sp- 前缀），余额以 ¥ 显示
+
+### 优化
+- 精简提供商：移除 nous、llama、openbmb（开源模型）及 meituan、xiaomi（无公开 API），从 27 家减至 22 家
+- 排名刷新自动排除不在 PROVIDERS 中的免费/无效提供商
+- 补齐 llama、sarvam、unisound、inception 的付费链接
+
+### 修复
+- 通义千问 base URL 更正为 dashscope.aliyuncs.com/compatible-mode/v1
+- ORG_TO_KEY 与 PROVIDERS 同步清理
+
 ## v5.3.2 — 2026-07-20
 
 ### 修复
