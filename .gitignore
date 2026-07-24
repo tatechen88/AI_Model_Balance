@@ -22,3 +22,12 @@ ai_traffic_monitor.lock
 # PyInstaller temp extraction
 _MEI*/
 
+
+# Temp files
+_*.py
+_*.log
+_*.txt
+*.bak
+*.png
+*.jpg
+DESIGN.md
