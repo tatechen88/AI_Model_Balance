@@ -8,11 +8,20 @@ A Windows desktop utility that lets you glance at your API balance across DeepSe
 
 ## Getting Started
 
-**Install → Run**
+**Run directly (zero pip install)**
 
 ```powershell
-pip install customtkinter pystray pillow
 python ai_model_monitor.py
+```
+
+All dependencies are vendored in the project. Only Python 3.10+ needed.
+
+**Or build a standalone EXE**
+
+```powershell
+pip install pyinstaller
+pyinstaller --clean --noconfirm ai_model_monitor.spec
+# Output: dist\Ai_MB.exe (copy to any Windows PC, double-click to run)
 ```
 
 An icon appears in the system tray. Hover to open the main panel — it auto-hides when your cursor leaves.
