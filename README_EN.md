@@ -6,6 +6,16 @@ A Windows desktop utility that lets you glance at your API balance across DeepSe
 
 ---
 
+## Download
+
+Windows users: download the EXE — no installation required.
+
+> [📥 Ai_MB_v5.5.0_Windows.zip](https://github.com/tatechen88/AI_Model_Balance/releases/download/v5.5.0/Ai_MB_v5.5.0_Windows.zip) (20 MB)
+
+Unzip and double-click `Ai_MB_v5.5.0.exe`. A tray icon will appear in the bottom-right corner.
+
+---
+
 ## Getting Started
 
 **Run directly (zero pip install)**

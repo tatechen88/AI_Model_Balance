@@ -6,6 +6,16 @@
 
 ---
 
+## 下载
+
+Windows 用户直接下载 EXE，无需安装任何东西：
+
+> [📥 Ai_MB_v5.5.0_Windows.zip](https://github.com/tatechen88/AI_Model_Balance/releases/download/v5.5.0/Ai_MB_v5.5.0_Windows.zip)（20MB）
+
+解压后双击 `Ai_MB_v5.5.0.exe` 即可运行。右下角会出现托盘图标。
+
+---
+
 ## 怎么用
 
 **直接运行（无需安装任何库）**
