@@ -1,5 +1,22 @@
 # Changelog
 
+## v5.5.0 — 2026-07-25
+
+### 重构
+- 零依赖运行：内嵌 customtkinter + pystray + six，无需 pip install
+- 克莱因蓝 Apple 暗色主题系统（THEME 令牌集中管理）
+- 22 家付费 AI 提供商，移除开源/无 API 条目
+
+### 新增
+- 💳 付费链接直达：每行 Key 旁悬停显示 URL，点击跳转浏览器
+- 通义千问 Key 自动识别（sk-ws- / sk-sp- 前缀）
+- README 中英文重写，精简实用
+
+### 修复
+- 通义千问 base URL 更正为 dashscope.aliyuncs.com
+- 排名刷新排除无效提供商
+- ORG_TO_KEY 同步清理
+
 ## v5.4.0 — 2026-07-25
 
 ### 新增
@@ -10,6 +27,12 @@
 - 精简提供商：移除 nous、llama、openbmb（开源模型）及 meituan、xiaomi（无公开 API），从 27 家减至 22 家
 - 排名刷新自动排除不在 PROVIDERS 中的免费/无效提供商
 - 补齐 llama、sarvam、unisound、inception 的付费链接
+
+### 设计
+- 全面重构 UI 配色：Apple 暗色面板 + 克莱因蓝 accent
+- 统一 ToolTip 提示系统，移除冗余 `bind_tooltip` 函数
+- THEME 设计令牌集中管理，移除所有硬编码色值
+- 优化函数参数：移除 `_fetch_generic_balance` 中未使用的 `provider` 参数
 
 ### 修复
 - 通义千问 base URL 更正为 dashscope.aliyuncs.com/compatible-mode/v1

@@ -12,7 +12,7 @@ import ctypes
 from ctypes import wintypes
 
 APP_NAME = "AI 模型余额"
-APP_VERSION = "v5.4.0"
+APP_VERSION = "v5.5.0"
 MAX_SLOTS = 5
 FETCH_INTERVAL_MIN = 10  # 预设每10分钟自动抓取
 
@@ -57,8 +57,27 @@ MODEL_DATA_FILE = BASE_DIR / "AI_model_data.json"
 RANKING_FILE = BASE_DIR / "AI_ranking_cache.json"
 RANKING_URL = "https://llm-stats.com/"
 
-SLOT_COLORS = ["#4F46E5", "#7C3AED", "#10B981", "#F59E0B", "#EC4899"]
+SLOT_COLORS = ["#002FA7", "#1E5BFF", "#4A8AFF", "#7AB8FF", "#A0D0FF"]
 SLOT_ICONS  = ["🖥", "🌙", "💎", "⚡", "🔥"]
+# ═══════════ Apple Dark + Amber Gold ═══════════
+THEME = {
+    "canvas": "#000000",
+    "surface": "#1c1c1e",
+    "surface_elevated": "#2c2c2e",
+    "hairline": "#38383a",
+    "ink": "#ffffff",
+    "body": "#f5f5f7",
+    "body_muted": "#98989d",
+    "mute": "#6d6d72",
+    "ash": "#48484a",
+    "accent": "#002FA7",
+    "accent_hover": "#1E5BFF",
+    "accent_on_dark": "#4A8AFF",
+    "success": "#30d158",
+    "warning": "#ff9f0a",
+    "danger": "#ff453a",
+}
+
 
 # ═══════════ 22 家 AI 模型提供商 ═══════════
 PROVIDERS = {
@@ -353,18 +372,18 @@ def get_model_rows(provider, data, pinfo=None):
 
     # 根据提供商 API 状态决定余额显示
     if api_ok == True:
-        rows.append(("💰 余额", str(balance), "#F59E0B"))
+        rows.append(("💰 余额", str(balance), THEME["warning"]))
         if provider == "kimi":
-            if extra.get("token_quota"): rows.append(("🔤 Token 配额", fmt_big(extra["token_quota"]), "#A78BFA"))
-            if extra.get("max_rpm"): rows.append(("📊 请求速率", f"{extra['max_rpm']}/min", "#34D399"))
-            if extra.get("max_tpm"): rows.append(("⚡ Token 速率", fmt_big(extra["max_tpm"]), "#FBBF24"))
-            if extra.get("max_concurrency"): rows.append(("🔗 最大并发", str(extra["max_concurrency"]), "#F472B6"))
+            if extra.get("token_quota"): rows.append(("🔤 Token 配额", fmt_big(extra["token_quota"]), THEME["accent_on_dark"]))
+            if extra.get("max_rpm"): rows.append(("📊 请求速率", f"{extra['max_rpm']}/min", THEME["success"]))
+            if extra.get("max_tpm"): rows.append(("⚡ Token 速率", fmt_big(extra["max_tpm"]), THEME["warning"]))
+            if extra.get("max_concurrency"): rows.append(("🔗 最大并发", str(extra["max_concurrency"]), THEME["danger"]))
     elif api_ok == "special":
-        rows.append(("💰 余额", "需浏览器查询", "#F59E0B"))
+        rows.append(("💰 余额", "需浏览器查询", THEME["warning"]))
     elif api_ok == "pending":
-        rows.append(("💰 余额", "🔬 待 Key 实测", "#FBBF24"))
+        rows.append(("💰 余额", "🔬 待 Key 实测", THEME["warning"]))
     else:
-        rows.append(("💰 余额", "仅本地追踪", "#6B7280"))
+        rows.append(("💰 余额", "仅本地追踪", THEME["mute"]))
 
     return rows
 
@@ -399,8 +418,8 @@ class ToolTip:
         self.tip.wm_overrideredirect(True)
         self.tip.wm_geometry(f"+{x}+{y}")
         self.tip.attributes("-topmost", True)
-        lbl = ctk.CTkLabel(self.tip, text=self.text, fg_color="#2D2D44",
-                           text_color="#E0E0F0", corner_radius=6,
+        lbl = ctk.CTkLabel(self.tip, text=self.text, fg_color=THEME["surface_elevated"],
+                           text_color=THEME["ink"], corner_radius=6,
                            font=("Microsoft YaHei UI", 11))
         lbl.pack(padx=8, pady=3)
     def update_text(self, text):
@@ -417,7 +436,7 @@ class SettingsDialog(ctk.CTkToplevel):
         self.geometry("620x560")
         self.resizable(False, False)
         self.attributes("-topmost", True)
-        self.configure(fg_color="#16162A")
+        self.configure(fg_color=THEME["canvas"])
         self.config = config
         self.on_save = on_save
         self.entries = []
@@ -429,15 +448,15 @@ class SettingsDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(self, text="🔑 API Key 配置（最多 5 个槽位）",
                      font=ctk.CTkFont(family="Microsoft YaHei UI", size=17, weight="bold"),
-                     text_color="#E0E0F0").pack(pady=(14, 6))
+                     text_color=THEME["ink"]).pack(pady=(14, 6))
         ctk.CTkLabel(self, text="粘贴 Key 自动识别  |  22 家提供商按 Coding 排名",
-                     font=("Microsoft YaHei UI", 13), text_color="#8B8BA0").pack()
+                     font=("Microsoft YaHei UI", 13), text_color=THEME["body_muted"]).pack()
 
         hdr = ctk.CTkFrame(self, fg_color="transparent")
         hdr.pack(fill="x", padx=14, pady=(8, 2))
         for txt, w in [("#", 30), ("API Key", 280), ("提供商", 155), ("💳", 28), ("", 30)]:
             ctk.CTkLabel(hdr, text=txt, width=w, font=("Microsoft YaHei UI", 13),
-                         text_color="#8B8BA0").pack(side="left", padx=(0 if txt == "#" else 4, 0))
+                         text_color=THEME["body_muted"]).pack(side="left", padx=(0 if txt == "#" else 4, 0))
 
         slots = self.config.get("slots", [])
         for i in range(MAX_SLOTS):
@@ -445,27 +464,27 @@ class SettingsDialog(ctk.CTkToplevel):
             self._row(i, s.get("key", ""), s.get("provider", ""))
 
         # 自动抓取间隔
-        intv_frame = ctk.CTkFrame(self, fg_color="#1E1E2E", corner_radius=6)
+        intv_frame = ctk.CTkFrame(self, fg_color=THEME["surface"], corner_radius=6)
         intv_frame.pack(fill="x", padx=10, pady=(10, 0))
         ctk.CTkLabel(intv_frame, text="⏱ 抓取 API Key 余额时间间隔", font=("Microsoft YaHei UI", 13),
-                     text_color="#E0E0F0").pack(side="left", padx=10, pady=8)
+                     text_color=THEME["ink"]).pack(side="left", padx=10, pady=8)
         self.interval_var = ctk.StringVar(value=str(self.config.get("fetch_interval_min", FETCH_INTERVAL_MIN)))
         intv_menu = ctk.CTkOptionMenu(intv_frame, values=["1", "5", "10", "15", "30", "60"],
                                       variable=self.interval_var, width=70,
-                                      fg_color="#0F0F23", button_color="#4F46E5",
+                                      fg_color=THEME["canvas"], button_color=THEME["accent"],
                                       font=("Microsoft YaHei UI", 13))
         intv_menu.pack(side="right", padx=10, pady=6)
         ctk.CTkLabel(intv_frame, text="分钟", font=("Microsoft YaHei UI", 13),
-                     text_color="#8B8BA0").pack(side="right", padx=(0, 4), pady=8)
+                     text_color=THEME["body_muted"]).pack(side="right", padx=(0, 4), pady=8)
 
         btn = ctk.CTkFrame(self, fg_color="transparent")
         btn.pack(pady=(10, 0))
         ctk.CTkButton(btn, text="取消", width=85, height=30, font=("Microsoft YaHei UI", 13),
-                      fg_color="#374151", hover_color="#4B5563", command=self.destroy).pack(side="left", padx=4)
+                      fg_color=THEME["surface_elevated"], hover_color=THEME["surface_elevated"], command=self.destroy).pack(side="left", padx=4)
         ctk.CTkButton(btn, text="💾 保存", width=85, height=30, font=("Microsoft YaHei UI", 13),
-                      fg_color="#4F46E5", hover_color="#6366F1", command=self._save).pack(side="left", padx=4)
+                      fg_color=THEME["accent"], hover_color=THEME["accent_hover"], command=self._save).pack(side="left", padx=4)
         ctk.CTkButton(btn, text="🏆 更新排名", width=95, height=30, font=("Microsoft YaHei UI", 13),
-                      fg_color="#F59E0B", hover_color="#FBBF24", text_color="#0F0F23",
+                      fg_color=THEME["warning"], hover_color=THEME["warning"], text_color=THEME["canvas"],
                       command=self._refresh_from_settings).pack(side="left", padx=4)
 
         # 排名来源资讯
@@ -474,29 +493,29 @@ class SettingsDialog(ctk.CTkToplevel):
         meta_frame.pack(pady=(8, 4))
         # 排名更新状态（供 _refresh_from_settings 使用）
         self._rank_status = ctk.CTkLabel(meta_frame, text="",
-                         font=("Microsoft YaHei UI", 12), text_color="#6B7280")
+                         font=("Microsoft YaHei UI", 12), text_color=THEME["mute"])
         self._rank_status.pack()
         if updated and site_updated:
             ctk.CTkLabel(meta_frame, text=f"🌐 网站更新: {site_updated}",
-                         font=("Microsoft YaHei UI", 12), text_color="#8B8BA0").pack()
+                         font=("Microsoft YaHei UI", 12), text_color=THEME["body_muted"]).pack()
         if updated:
             ctk.CTkLabel(meta_frame, text=f"🔗 来源: {source}",
-                         font=("Microsoft YaHei UI", 12), text_color="#A0A0C0",
+                         font=("Microsoft YaHei UI", 12), text_color=THEME["body_muted"],
                          wraplength=580).pack()
         else:
             ctk.CTkLabel(meta_frame, text="🔗 来源: llm-stats.com/leaderboards/best-ai-for-coding",
-                         font=("Microsoft YaHei UI", 12), text_color="#A0A0C0",
+                         font=("Microsoft YaHei UI", 12), text_color=THEME["body_muted"],
                          wraplength=580).pack()
 
     def _row(self, idx, key, provider):
-        row = ctk.CTkFrame(self, fg_color="#1E1E2E", corner_radius=6, height=42)
+        row = ctk.CTkFrame(self, fg_color=THEME["surface"], corner_radius=6, height=42)
         row.pack(fill="x", padx=10, pady=3)
         row.pack_propagate(False)
         color = SLOT_COLORS[idx]
         ctk.CTkLabel(row, text=str(idx+1), width=30,
                      font=("Cascadia Code", 14, "bold"), text_color=color).pack(side="left", padx=(10, 6))
         ke = ctk.CTkEntry(row, width=280, show="•", font=("Cascadia Code", 12),
-                          fg_color="#0F0F23", border_width=1, border_color="#2A2A4A",
+                          fg_color=THEME["canvas"], border_width=1, border_color=THEME["hairline"],
                           height=30)
         ke.pack(side="left", padx=3, pady=5); ke.insert(0, key)
         pv = ctk.StringVar(value=PROVIDERS.get(provider, {}).get("label", provider) if provider else "")
@@ -504,10 +523,10 @@ class SettingsDialog(ctk.CTkToplevel):
         prov_keys_sorted = sorted(PROVIDERS.keys(), key=lambda k: PROVIDERS[k].get("rank", 99))
         prov_labels = [PROVIDERS[k]["label"] for k in prov_keys_sorted]
         pm = ctk.CTkOptionMenu(row, width=155, values=[""]+prov_labels,
-                               fg_color="#0F0F23", button_color="#4F46E5",
-                               text_color="#E0E0F0",
+                               fg_color=THEME["canvas"], button_color=THEME["accent"],
+                               text_color=THEME["ink"],
                                variable=pv, font=("Microsoft YaHei UI", 13),
-                               button_hover_color="#6366F1",
+                               button_hover_color=THEME["accent_hover"],
                                corner_radius=6)
         pm.pack(side="left", padx=3, pady=5)
         def _open_billing(i=idx, pvar=pv):
@@ -519,7 +538,7 @@ class SettingsDialog(ctk.CTkToplevel):
                         webbrowser.open(url)
                     return
         bill_btn = ctk.CTkButton(row, text="💳", width=28, height=28,
-                                  fg_color="transparent", hover_color="#374151",
+                                  fg_color="transparent", hover_color=THEME["surface_elevated"],
                                   font=("Segoe UI", 12),
                                   command=_open_billing)
         bill_btn.pack(side="left", padx=1, pady=5)
@@ -537,8 +556,8 @@ class SettingsDialog(ctk.CTkToplevel):
             tip.update_text("选择提供商后显示付费链接")
         pv.trace_add("write", _on_prov_change)
         del_btn = ctk.CTkButton(row, text="🗑", width=30, height=30,
-                                fg_color="transparent", hover_color="#EF4444",
-                                font=("Segoe UI", 14), text_color="#8B8BA0",
+                                fg_color="transparent", hover_color=THEME["danger"],
+                                font=("Segoe UI", 14), text_color=THEME["body_muted"],
                                 command=lambda i=idx: self._clear_row(i))
         del_btn.pack(side="right", padx=(4, 6), pady=5)
         def on_key_change(*args, i=idx, k=ke, pvar=pv):
@@ -588,9 +607,9 @@ class SettingsDialog(ctk.CTkToplevel):
         save_config(self.config)
 
         # 在设定页显示进度
-        self._rank_status.configure(text="🏆 正在从 llm-stats.com 抓取排名...", text_color="#F59E0B")
-        self._rank_progress = ctk.CTkProgressBar(self, fg_color="#1E1E2E",
-                                                   progress_color="#F59E0B", height=4, corner_radius=2)
+        self._rank_status.configure(text="🏆 正在从 llm-stats.com 抓取排名...", text_color=THEME["warning"])
+        self._rank_progress = ctk.CTkProgressBar(self, fg_color=THEME["surface"],
+                                                   progress_color=THEME["warning"], height=4, corner_radius=2)
         self._rank_progress.pack(fill="x", padx=10, pady=(4, 0))
         self._rank_progress.start()
         self.update_idletasks()
@@ -602,11 +621,11 @@ class SettingsDialog(ctk.CTkToplevel):
                 _, __, site_updated = get_ranking_meta()
                 site_info = f"  |  🌐 网站更新: {site_updated}" if site_updated else ""
                 self._rank_status.configure(
-                    text=f"✅ 排名更新完成 ({count} 家) @ {updated}{site_info}", text_color="#22C55E")
+                    text=f"✅ 排名更新完成 ({count} 家) @ {updated}{site_info}", text_color=THEME["success"])
             elif count == 0:
-                self._rank_status.configure(text="❌ 排名抓取失败，请检查网络", text_color="#EF4444")
+                self._rank_status.configure(text="❌ 排名抓取失败，请检查网络", text_color=THEME["danger"])
             else:
-                self._rank_status.configure(text=f"❌ 排名更新出错: {updated}", text_color="#EF4444")
+                self._rank_status.configure(text=f"❌ 排名更新出错: {updated}", text_color=THEME["danger"])
             self.master._on_config_saved()
 
         self.master._refresh_rankings(on_done=_done)
@@ -622,13 +641,13 @@ class MiniBalance(ctk.CTkToplevel):
         super().__init__(parent)
         self.overrideredirect(True)
         self.attributes("-topmost", True)
-        self.configure(fg_color="#16162A")
+        self.configure(fg_color=THEME["canvas"])
         self.resizable(False, False)
         self._drag_x = self._drag_y = 0
 
         self.label = ctk.CTkLabel(self, text="💰 —",
                                   font=ctk.CTkFont(family="Microsoft YaHei UI", size=14, weight="bold"),
-                                  text_color="#F59E0B")
+                                  text_color=THEME["warning"])
         self.label.pack(padx=12, pady=4)
         self._click_cb = None  # 点击回呼
         self._was_drag = False
@@ -681,7 +700,7 @@ def bind_tooltip(widget, text):
         tip[0].overrideredirect(True)
         tip[0].attributes("-topmost", True)
         tip[0].configure(fg_color="#2A2A3E")
-        ctk.CTkLabel(tip[0], text=text, font=("Microsoft YaHei UI", 11), text_color="#E0E0F0").pack(padx=8, pady=3)
+        ctk.CTkLabel(tip[0], text=text, font=("Microsoft YaHei UI", 11), text_color=THEME["ink"]).pack(padx=8, pady=3)
         tip[0].update_idletasks()
         x = widget.winfo_rootx() + (widget.winfo_width() - tip[0].winfo_reqwidth()) // 2
         y = widget.winfo_rooty() - tip[0].winfo_reqheight() - 4
@@ -757,35 +776,35 @@ class ModelBalanceMonitor(ctk.CTk):
         return [(i, s) for i, s in enumerate(self.config.get("slots", [])) if s.get("key", "").strip()]
 
     def _build_ui(self):
-        self.configure(fg_color="#0F0F23")
+        self.configure(fg_color=THEME["canvas"])
         main = ctk.CTkFrame(self, fg_color="transparent")
         main.pack(fill="both", expand=True, padx=3, pady=3)
 
-        tb = ctk.CTkFrame(main, fg_color="#16162A", corner_radius=12, height=44)
+        tb = ctk.CTkFrame(main, fg_color=THEME["canvas"], corner_radius=12, height=44)
         tb.pack(fill="x", padx=10, pady=(8, 0)); tb.pack_propagate(False)
 
         self.model_var = ctk.StringVar(value="")
         self.model_dropdown = ctk.CTkOptionMenu(tb, variable=self.model_var, values=["暂无配置"],
                                                 font=ctk.CTkFont(family="Microsoft YaHei UI", size=12, weight="bold"),
-                                                fg_color="#4F46E5", button_color="#6366F1",
-                                                button_hover_color="#818CF8",
+                                                fg_color=THEME["accent"], button_color=THEME["accent_hover"],
+                                                button_hover_color=THEME["accent_on_dark"],
                                                 width=200, height=32, corner_radius=8,
                                                 command=self._on_model_select)
         self.model_dropdown.pack(side="left", padx=8)
         btnf = ctk.CTkFrame(tb, fg_color="transparent")
         btnf.pack(side="right", padx=4)
         btn_refresh = ctk.CTkButton(btnf, text="🔄", width=32, height=32, font=("Segoe UI", 13),
-                      fg_color="transparent", hover_color="#374151",
+                      fg_color="transparent", hover_color=THEME["surface_elevated"],
                       corner_radius=6, command=self._fetch_all_data)
         btn_refresh.pack(side="left", padx=2); bind_tooltip(btn_refresh, "刷新余额")
         btn_settings = ctk.CTkButton(btnf, text="⚙", width=32, height=32, font=("Segoe UI", 13),
-                      fg_color="transparent", hover_color="#374151",
+                      fg_color="transparent", hover_color=THEME["surface_elevated"],
                       corner_radius=6, command=self._open_settings)
         btn_settings.pack(side="left", padx=2); bind_tooltip(btn_settings, "API Key 设定")
-        self.api_dot = ctk.CTkLabel(btnf, text="●", font=("Segoe UI", 9), text_color="#6B7280")
+        self.api_dot = ctk.CTkLabel(btnf, text="●", font=("Segoe UI", 9), text_color=THEME["mute"])
         self.api_dot.pack(side="left", padx=(2, 2)); bind_tooltip(self.api_dot, "API 连线状态")
         btn_hide = ctk.CTkButton(btnf, text="✕", width=32, height=32, fg_color="transparent",
-                      hover_color="#EF4444", text_color="#94A3B8", font=("Segoe UI", 14),
+                      hover_color=THEME["danger"], text_color=THEME["body_muted"], font=("Segoe UI", 14),
                       corner_radius=6, command=self.hide_window)
         btn_hide.pack(side="left"); bind_tooltip(btn_hide, "隐藏视窗")
 
@@ -794,18 +813,18 @@ class ModelBalanceMonitor(ctk.CTk):
         self.card_frame.pack(fill="both", expand=True, padx=10, pady=(6, 2))
 
         # 底部状态列 — 直接放在 main 底部，用固定高度确保可见
-        self.status_bar = ctk.CTkFrame(main, fg_color="#16162A", corner_radius=8, height=56)
+        self.status_bar = ctk.CTkFrame(main, fg_color=THEME["canvas"], corner_radius=8, height=56)
         self.status_bar.pack(fill="x", padx=8, pady=(0, 4), side="bottom")
         self.status_bar.pack_propagate(False)
 
-        self.progress = ctk.CTkProgressBar(self.status_bar, fg_color="#1E1E2E",
-                                            progress_color="#6366F1", height=5, corner_radius=2)
+        self.progress = ctk.CTkProgressBar(self.status_bar, fg_color=THEME["surface"],
+                                            progress_color=THEME["accent_hover"], height=5, corner_radius=2)
         self.progress.pack(fill="x", padx=10, pady=(6, 0))
 
         self.tip_label = ctk.CTkLabel(self.status_bar,
             text="💡 鼠标移到托盘图标自动弹出  |  🏆 刷新排名  |  右键退出",
             font=ctk.CTkFont(family="Microsoft YaHei UI", size=13),
-            text_color="#D0D0F0")
+            text_color=THEME["ink"])
         self.tip_label.pack(padx=10, pady=(2, 6))
 
 
@@ -968,7 +987,7 @@ class ModelBalanceMonitor(ctk.CTk):
         self.card_widgets.clear()
         if self._current_slot is None:
             empty = ctk.CTkLabel(self.card_frame, text="点击 ⚙ 配置 API Key",
-                                 font=("Microsoft YaHei UI", 14), text_color="#6B7280")
+                                 font=("Microsoft YaHei UI", 14), text_color=THEME["mute"])
             empty.pack(expand=True); self.card_widgets.append(empty); return
         slots = self.config.get("slots", [])
         if self._current_slot >= len(slots):
@@ -990,32 +1009,32 @@ class ModelBalanceMonitor(ctk.CTk):
             save_model_data(self.model_data)
         data = ts[self._current_slot]
         rows = get_model_rows(provider, data, pinfo)
-        card = ctk.CTkFrame(self.card_frame, fg_color="#16162A", corner_radius=14,
-                            border_width=1, border_color="#2A2A4A")
+        card = ctk.CTkFrame(self.card_frame, fg_color=THEME["canvas"], corner_radius=14,
+                            border_width=1, border_color=THEME["hairline"])
         card.pack(fill="both", expand=True); self.card_widgets.append(card)
         h = ctk.CTkFrame(card, fg_color="transparent")
         h.pack(fill="x", padx=18, pady=(14, 6))
         ctk.CTkLabel(h, text=icon, font=("Segoe UI Emoji", 22)).pack(side="left", padx=(0, 10))
-        ctk.CTkLabel(h, text=prov_label, font=self.FONT_TITLE, text_color="#E0E0F0").pack(side="left")
+        ctk.CTkLabel(h, text=prov_label, font=self.FONT_TITLE, text_color=THEME["ink"]).pack(side="left")
 
-        if api_ok == True: status_color = "#22C55E"
-        elif api_ok == "pending": status_color = "#F59E0B"
-        elif api_ok == "special": status_color = "#3B82F6"
-        else: status_color = "#6B7280"
+        if api_ok == True: status_color = THEME["success"]
+        elif api_ok == "pending": status_color = THEME["warning"]
+        elif api_ok == "special": status_color = THEME["accent"]
+        else: status_color = THEME["mute"]
         dot = ctk.CTkFrame(h, width=8, height=8, corner_radius=4, fg_color=status_color)
         dot.pack(side="right", padx=(0, 8))
-        sep = ctk.CTkFrame(card, fg_color="#2A2A4A", height=1)
+        sep = ctk.CTkFrame(card, fg_color=THEME["hairline"], height=1)
         sep.pack(fill="x", padx=18, pady=(2, 6))
         for label, value, val_color in rows:
             row = ctk.CTkFrame(card, fg_color="transparent")
             row.pack(fill="x", padx=18, pady=(6, 0))
-            ctk.CTkLabel(row, text=label, font=self.FONT_LABEL, text_color="#94A3B8").pack(side="left")
+            ctk.CTkLabel(row, text=label, font=self.FONT_LABEL, text_color=THEME["body_muted"]).pack(side="left")
             ctk.CTkLabel(row, text=value, font=self.FONT_VALUE, text_color=val_color).pack(side="right")
         if prov_note:
-            if api_ok == True: note_color = "#6B7280"
-            elif api_ok == "pending": note_color = "#F59E0B"
-            elif api_ok == "special": note_color = "#3B82F6"
-            else: note_color = "#EF4444"
+            if api_ok == True: note_color = THEME["mute"]
+            elif api_ok == "pending": note_color = THEME["warning"]
+            elif api_ok == "special": note_color = THEME["accent"]
+            else: note_color = THEME["danger"]
             nr = ctk.CTkFrame(card, fg_color="transparent")
             nr.pack(fill="x", padx=18, pady=(10, 6))
             ctk.CTkLabel(nr, text=f"📋 {prov_note}", font=("Microsoft YaHei UI", 10), text_color=note_color).pack(side="left")
@@ -1102,7 +1121,7 @@ class ModelBalanceMonitor(ctk.CTk):
         self._show_progress()
         self.tip_label.configure(text="🔄 正在查询各 API 余额...")
         self.update_idletasks()
-        self.api_dot.configure(text="◉", text_color="#F59E0B")
+        self.api_dot.configure(text="◉", text_color=THEME["warning"])
         def _fetch():
             try:
                 slots = self.config.get("slots", [])
@@ -1142,7 +1161,7 @@ class ModelBalanceMonitor(ctk.CTk):
 
     def _on_fetch_done(self, updated=False):
         self._hide_progress()
-        self.api_dot.configure(text="●", text_color="#22C55E")
+        self.api_dot.configure(text="●", text_color=THEME["success"])
         if not updated:
             t = time.strftime("%H:%M:%S")
             self.tip_label.configure(text=f"✅ Key 已刷新 ({t}, 无变化)")
