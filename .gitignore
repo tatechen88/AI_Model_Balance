@@ -8,6 +8,7 @@ __pycache__/
 # Sensitive user data (contains encrypted API keys or cached balances)
 AI_config.enc
 AI_traffic_data.json
+AI_model_data.json
 AI_ranking_cache.json
 
 # Lock file
