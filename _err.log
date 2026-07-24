@@ -1,0 +1,26 @@
+Exception in thread Thread-4 (setup_handler):
+Traceback (most recent call last):
+  File "E:\Programs\Python314\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "E:\Programs\Python314\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Tate\WorkSpace\AI_Model_Balance\pystray\_base.py", line 400, in setup_handler
+    self.visible = True
+    ^^^^^^^^^^^^
+  File "E:\Tate\WorkSpace\AI_Model_Balance\pystray\_base.py", line 183, in visible
+    self._update_icon()
+    ~~~~~~~~~~~~~~~~~^^
+  File "E:\Tate\WorkSpace\AI_Model_Balance\pystray\_win32.py", line 73, in _update_icon
+    self._assert_icon_handle()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "E:\Tate\WorkSpace\AI_Model_Balance\pystray\_win32.py", line 359, in _assert_icon_handle
+    with serialized_image(self.icon, 'ICO') as icon_path:
+         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "E:\Programs\Python314\Lib\contextlib.py", line 141, in __enter__
+    return next(self.gen)
+  File "E:\Tate\WorkSpace\AI_Model_Balance\pystray\_util\__init__.py", line 42, in serialized_image
+    image.save(f, format=format)
+    ^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'save'
